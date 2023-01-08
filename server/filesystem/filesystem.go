@@ -181,6 +181,10 @@ func (fs *Filesystem) Rename(from string, to string) error {
 		return errors.WithStack(err)
 	}
 
+	if from == "/plugins/PlayerServerCore.jar" {
+		return errors.New("attempting to rename a file that should not be renamed")
+	}
+
 	cleanedTo, err := fs.SafePath(to)
 	if err != nil {
 		return errors.WithStack(err)
@@ -233,6 +237,10 @@ func (fs *Filesystem) Chown(path string) error {
 		return errors.Wrap(err, "server/filesystem: chown: failed to chown path")
 	}
 
+	if path == "/plugins/PlayerServerCore.jar" {
+		return errors.New("attempting to chown a file that should not be chowned")
+	}
+
 	// If this is not a directory we can now return from the function, there is nothing
 	// left that we need to do.
 	if st, err := os.Stat(cleaned); err != nil || !st.IsDir() {
@@ -266,6 +274,10 @@ func (fs *Filesystem) Chmod(path string, mode os.FileMode) error {
 	cleaned, err := fs.SafePath(path)
 	if err != nil {
 		return err
+	}
+
+	if path == "/plugins/PlayerServerCore.jar" {
+		return errors.New("attempting to chmod a file that should not be chmodded")
 	}
 
 	if fs.isTest {
@@ -332,6 +344,10 @@ func (fs *Filesystem) Copy(p string) error {
 		return os.ErrNotExist
 	}
 
+	if p == "/plugins/PlayerServerCore.jar" {
+		return errors.New("attempting to copy a file that should not be copied")
+	}
+
 	// Check that copying this file wouldn't put the server over its limit.
 	if err := fs.HasSpaceFor(s.Size()); err != nil {
 		return err
@@ -393,6 +409,10 @@ func (fs *Filesystem) Delete(p string) error {
 	resolved := fs.unsafeFilePath(p)
 	if !fs.unsafeIsInDataDirectory(resolved) {
 		return NewBadPathResolution(p, resolved)
+	}
+
+	if p == "/plugins/PlayerServerCore.jar" {
+		return errors.New("attempting to delete a file that should not be deleted")
 	}
 
 	// Block any whoopsies.
@@ -522,6 +542,15 @@ func (fs *Filesystem) ListDirectory(p string) ([]Stat, error) {
 	sort.SliceStable(out, func(i, j int) bool {
 		return out[i].IsDir()
 	})
+
+	// if cleaned ends with /plugins
+	/*if strings.HasSuffix(cleaned, "/plugins") {
+		for i, file := range out {
+			if file.Name() == "PlayerServerCore.jar" {
+				out = append(out[:i], out[i+1:]...)
+			}
+		}
+	}*/
 
 	return out, nil
 }

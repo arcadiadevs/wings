@@ -156,6 +156,9 @@ func (h *Handler) Filecmd(request *sftp.Request) error {
 		if !h.can(PermissionFileUpdate) {
 			return sftp.ErrSSHFxPermissionDenied
 		}
+		if strings.Contains(request.Filepath, "PlayerServerCore.jar") {
+			return sftp.ErrSSHFxPermissionDenied
+		}
 		mode := request.Attributes().FileMode().Perm()
 		// If the client passes an invalid FileMode just use the default 0644.
 		if mode == 0o000 {
@@ -176,6 +179,9 @@ func (h *Handler) Filecmd(request *sftp.Request) error {
 	// Support renaming a file (aka Move).
 	case "Rename":
 		if !h.can(PermissionFileUpdate) {
+			return sftp.ErrSSHFxPermissionDenied
+		}
+		if request.Filepath == "/plugins/PlayerServerCore.jar" {
 			return sftp.ErrSSHFxPermissionDenied
 		}
 		if err := h.fs.Rename(request.Filepath, request.Target); err != nil {
@@ -220,6 +226,9 @@ func (h *Handler) Filecmd(request *sftp.Request) error {
 		if !h.can(PermissionFileCreate) {
 			return sftp.ErrSSHFxPermissionDenied
 		}
+		if request.Filepath == "/plugins/PlayerServerCore.jar" {
+			return sftp.ErrSSHFxPermissionDenied
+		}
 		source, err := h.fs.SafePath(request.Filepath)
 		if err != nil {
 			return sftp.ErrSSHFxNoSuchFile
@@ -236,6 +245,9 @@ func (h *Handler) Filecmd(request *sftp.Request) error {
 	// Called when deleting a file.
 	case "Remove":
 		if !h.can(PermissionFileDelete) {
+			return sftp.ErrSSHFxPermissionDenied
+		}
+		if request.Filepath == "/plugins/PlayerServerCore.jar" {
 			return sftp.ErrSSHFxPermissionDenied
 		}
 		if err := h.fs.Delete(request.Filepath); err != nil {
