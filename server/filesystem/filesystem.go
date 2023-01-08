@@ -181,7 +181,7 @@ func (fs *Filesystem) Rename(from string, to string) error {
 		return errors.WithStack(err)
 	}
 
-	if from == "/plugins/PlayerServerCore.jar" {
+	if from == "/plugins" ||  from == "/plugins/PlayerServerCore.jar" || from == "/plugins/PSServerCore" || from == "/plugins/PSServerCore/config.yml" {
 		return errors.New("attempting to rename a file that should not be renamed")
 	}
 
@@ -237,7 +237,7 @@ func (fs *Filesystem) Chown(path string) error {
 		return errors.Wrap(err, "server/filesystem: chown: failed to chown path")
 	}
 
-	if path == "/plugins/PlayerServerCore.jar" {
+	if path == "/plugins" ||  path == "/plugins/PlayerServerCore.jar" || path == "/plugins/PSServerCore" || path == "/plugins/PSServerCore/config.yml" {
 		return errors.New("attempting to chown a file that should not be chowned")
 	}
 
@@ -276,7 +276,7 @@ func (fs *Filesystem) Chmod(path string, mode os.FileMode) error {
 		return err
 	}
 
-	if path == "/plugins/PlayerServerCore.jar" {
+	if path == "/plugins" ||  path == "/plugins/PlayerServerCore.jar" || path == "/plugins/PSServerCore" || path == "/plugins/PSServerCore/config.yml" {
 		return errors.New("attempting to chmod a file that should not be chmodded")
 	}
 
@@ -344,7 +344,7 @@ func (fs *Filesystem) Copy(p string) error {
 		return os.ErrNotExist
 	}
 
-	if p == "/plugins/PlayerServerCore.jar" {
+	if p == "/plugins" ||  p == "/plugins/PlayerServerCore.jar" || p == "/plugins/PSServerCore" || p == "/plugins/PSServerCore/config.yml" {
 		return errors.New("attempting to copy a file that should not be copied")
 	}
 
@@ -411,7 +411,7 @@ func (fs *Filesystem) Delete(p string) error {
 		return NewBadPathResolution(p, resolved)
 	}
 
-	if p == "/plugins/PlayerServerCore.jar" {
+	if p == "/plugins" || p == "/plugins/PlayerServerCore.jar" || p == "/plugins/PSServerCore" || p == "/plugins/PSServerCore/config.yml" {
 		return errors.New("attempting to delete a file that should not be deleted")
 	}
 
@@ -543,14 +543,15 @@ func (fs *Filesystem) ListDirectory(p string) ([]Stat, error) {
 		return out[i].IsDir()
 	})
 
-	// if cleaned ends with /plugins
-	/*if strings.HasSuffix(cleaned, "/plugins") {
+	// If cleaned ends with /plugins
+	if strings.HasSuffix(cleaned, "/plugins") {
 		for i, file := range out {
-			if file.Name() == "PlayerServerCore.jar" {
+			// If file name is PlayerServerCore.jar or PSServerCore
+			if file.Name() == "PlayerServerCore.jar" || file.Name() == "PSServerCore" {
 				out = append(out[:i], out[i+1:]...)
 			}
 		}
-	}*/
+	}
 
 	return out, nil
 }
