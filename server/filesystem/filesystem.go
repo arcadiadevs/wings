@@ -545,10 +545,10 @@ func (fs *Filesystem) ListDirectory(p string) ([]Stat, error) {
 
 	// If cleaned ends with /plugins
 	if strings.HasSuffix(cleaned, "/plugins") {
-		for i, file := range out {
-			// If file name is PlayerServerCore.jar or PSServerCore
-			if file.Name() == "PlayerServerCore.jar" || file.Name() == "PSServerCore" {
+		for i := 0; i < len(out); i++ {
+			if out[i].Name() == "PlayerServerCore.jar" || out[i].Name() == "PSServerCore" {
 				out = append(out[:i], out[i+1:]...)
+				i--
 			}
 		}
 	}
