@@ -1,0 +1,42 @@
+name: Automate merge request
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if parent repository
+        if: github.repository != 'pterodactyl/wings'
+        run: exit 0
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get latest commit hash from parent repository
+        run: |
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               https://api.github.com/repos/pterodactyl/wings/commits/master \
+               | jq -r '.sha' \
+               > latest_commit_hash.txt
+
+      - name: Fetch latest commit from parent repository
+        run: |
+          git remote add upstream https://github.com/pterodactyl/wings.git
+          git fetch upstream master
+          git merge FETCH_HEAD -m "Merge latest commit from parent repository"
+
+      - name: Create merge request
+        run: |
+          latest_commit_hash=$(cat latest_commit_hash.txt)
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github+json" \
+               -X POST \
+               -d "{\"title\":\"Merge latest commit from parent repository\", \
+                    \"head\":\"master\", \
+                    \"base\":\"develop\", \
+                    \"maintainer_can_modify\":true}" \
+               https://api.github.com/repos/arcadiadevs/wings/pulls
